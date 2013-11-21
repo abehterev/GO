@@ -13,7 +13,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	)
 
 	w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Server", "WebService/0.1")
+	w.Header().Set("Server", "CollogueService/0.1")
 
 	out += "Hello, world\n"
 	out += "Remote addr: " + r.RemoteAddr + "\n"
@@ -23,7 +23,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	out += "URI: " + r.URL.Path + "\n"
 
 	io.WriteString(w, out)
-	fmt.Println(out)
+//	fmt.Println(out)
 }
 
 func main(){
@@ -31,12 +31,13 @@ func main(){
 	ser := &http.Server{
 		Addr:           ":8080",
 		Handler:        nil,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,	
+		ReadTimeout:    5 * time.Second,
+		WriteTimeout:   5 * time.Second,
 	}
 
 	http.HandleFunc("/", requestHandler)
 	err := ser.ListenAndServeTLS("test.crt","test.key.nopass")
+//	err := ser.ListenAndServe()
 
 //	http.ListenAndServe(":8080", nil)
 
