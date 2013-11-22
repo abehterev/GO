@@ -23,7 +23,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	out += "URI: " + r.URL.Path + "\n"
 
 	io.WriteString(w, out)
-//	fmt.Println(out)
+	fmt.Println(out)
 }
 
 func main(){

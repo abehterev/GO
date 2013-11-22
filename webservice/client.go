@@ -3,14 +3,16 @@ package main;
 import (
 	"net/http"
 	"net/url"
+	"crypto/tls"
 	"fmt"
 )
 
 func main(){
 
 	tr := &http.Transport{
-	//	TLSClientConfig:    &tls.Config{RootCAs: pool},
-		DisableCompression: true,
+	//	TLSClientConfig:	&tls.Config{RootCAs: pool},
+		DisableCompression:	true,
+		TLSClientConfig:	&tls.Config{InsecureSkipVerify: true},
 	}
 
 	client := &http.Client{
@@ -22,11 +24,10 @@ func main(){
 
 	//resp, err := client.Get("http://localhost:8080/robots.txt")
 
-	//resp.Body.Close()	
+	resp.Body.Close()	
 
 	if err != nil {
 		fmt.Println("Err: " + err.Error() + "\n")
 	}
 
-	resp.Body.Close()
 }
