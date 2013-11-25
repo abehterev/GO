@@ -1,20 +1,38 @@
 package main
 
 import (
+	"io"
+	"fmt"
 	"net"
 	"net/http"
 	"net/http/fcgi"
 )
 
-type FastCGIServer struct{}
+type FCGIServer struct{}
 
-func (s FastCGIServer) ServeHTTP(resp http.ResponseWriter, req *http.Request){
-	resp.Write([]byte("<h1>Hello, 世界</h1>\n<p>Behold my Go web app.</p>"))
+func (s FCGIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+        var (
+                out string
+        )   
+
+        out += "Hello, world\n"
+        out += "Remote addr: " + r.RemoteAddr + "\n"
+        out += "You are use: " + r.Header.Get("User-Agent") + "\n"
+        out += "METHOD: " + r.Method + "\n"
+        out += "rawURI: " + r.RequestURI + "\n"
+        out += "URI: " + r.URL.Path + "\n"
+
+        io.WriteString(w, out)
+        fmt.Println(out)
 }
 
 func main() {
-	listener, _ := net.Listen("tcp", "127.0.0.1:10000")
-	srv := new(FastCGIServer)
-	fcgi.Serve(listener, srv)
+	fcgi_listener, err := net.Listen("tcp", "127.0.0.1:10001")
+	if err != nil {
+		fmt.Println("Err: " + err.Error() + "\n")
+	}
+	defer fcgi_listener.Close()
+	fcgi_srv := new(FCGIServer)
+	fcgi.Serve(fcgi_listener, fcgi_srv)
 }
 
