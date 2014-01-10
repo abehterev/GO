@@ -1,0 +1,6 @@
+{
+	"Server": "tcp(localhost:3306)",
+	"Login": "musicbox",
+	"Password": "musicboxpass",
+	"Database": "musicbox"
+}
