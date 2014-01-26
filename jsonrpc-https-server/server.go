@@ -2,10 +2,9 @@ package main;
 
 import (
 	"net/http"
-	"io"
 	"fmt"
 	"time"
-	"github.com/gorilla/mux"
+	"errors"
 	"github.com/gorilla/rpc"
 	"github.com/gorilla/rpc/json"
 )
@@ -17,46 +16,28 @@ func init() {
     http.Handle("/rpc", s)
 }
 
-func requestHandler(w http.ResponseWriter, r *http.Request) {
-	var (
-		out string
-	)
-
-	vars := mux.Vars(r)
-	ver := vars["ver"]
-	action := vars["action"]
-
-	w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Server", "MuxService/0.1")
-
-	out += "Hello, world\n"
-	out += "Remote addr: " + r.RemoteAddr + "\n"
-	out += "You are use: " + r.Header.Get("User-Agent") + "\n"
-	out += "METHOD: " + r.Method + "\n"
-	out += "rawURI: " + r.RequestURI + "\n"
-	out += "URI: " + r.URL.Path + "\n"
-	out += "API ver: " + ver + "\n"
-	out += "ACTION: " + action + "\n"
-
-	io.WriteString(w, out)
-	fmt.Println(out)
-}
-
-type HelloArgs struct {
-    Who string
-}
-
-type HelloReply struct {
-    Message string
-}
+var ErrResponseError = errors.New("response error")
 
 type HelloService struct {}
 
-func (h *HelloService) Say(r *http.Request, args *HelloArgs, reply *HelloReply) error {
-    reply.Message = "Hello, " + args.Who + "!"
-    return nil
+type SumArgs struct {
+	a int
+	b int
 }
 
+type SumReply struct {
+	rep int
+}
+
+func (h *HelloService) Sum(r *http.Request, args *SumArgs, reply *SumReply) error {
+	reply.rep = args.a + args.b
+	fmt.Printf("%d + %d = %d\n",args.a,args.b,reply.rep)
+	return nil
+}
+
+func (h *HelloService) ResponseError(r *http.Request, args *SumArgs, reply *SumReply) error {
+        return ErrResponseError
+}
 
 func main(){
 
@@ -67,14 +48,8 @@ func main(){
 		WriteTimeout:   5 * time.Second,
 	}
 
-	r := mux.NewRouter()
-	//r.HandleFunc("/", homeHandl)
-
-	r.HandleFunc("/api/{ver:[0-9]{2}}/function/{action}/", requestHandler).Host("devel.behterev.su")
-
-	http.Handle("/", r)
-
-	err := ser.ListenAndServeTLS("test.crt","test.key.nopass")
+//	err := ser.ListenAndServeTLS("test.crt","test.key.nopass")
+	err := ser.ListenAndServe()
 
 	if err != nil {
 		fmt.Println("Err: " + err.Error() + "\n")
