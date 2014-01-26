@@ -2,19 +2,17 @@ package main;
 
 import (
 	"net/http"
-	"net/url"
+//	"net/url"
 	"crypto/tls"
+//	"io"
 	"io/ioutil"
-	"log"
+//	"log"
 	"fmt"
+	"encoding/json"
+	"strings"
 )
 
-func failOnError(err error, msg string) {
-        if err != nil {
-                log.Fatalf("%s: %s", msg, err)
-                panic(fmt.Sprintf("%s: %s", msg, err))
-        }
-}
+
 
 func main(){
 
@@ -26,14 +24,43 @@ func main(){
 	client := &http.Client{
 		Transport: tr,
 	}
-	
-	resp, err := client.PostForm("https://localhost:8080/", url.Values{"key": {"Value"}, "id": {"123"},})
-	failOnError(err, "Failed to connect")
-	
+
+	type AC struct {
+		Login string `json:"login"`
+		Password string `json:"pass"`
+	}
+
+	a := &AC{
+		Login: "log",
+		Password: "pas",
+	}
+
+	j_a, err := json.Marshal(a)
+	if err != nil {
+		fmt.Printf("JSON marshal error: %s\n",err.Error())
+	}
+
+	post := strings.NewReader(string(j_a))
+	fmt.Println(post)
+
+	req, err := http.NewRequest("POST", "https://localhost:8080/api", post)
+	if err != nil {
+		fmt.Printf("NewRequest error: %s\n",err.Error())
+	}
+
+	req.Header.Set("User-Agent", "TestAgent")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Request error: %s\n",err.Error())
+	}
 	defer resp.Body.Close()
+	
 	body, err := ioutil.ReadAll(resp.Body)
-	failOnError(err, "Failed to get body")
+	if err != nil {
+		fmt.Printf("Body error: %s\n",err.Error())
+	}
 
-	fmt.Sprintf("BODY:\n%s", body)
-
+	fmt.Printf("BODY:\n%s", body)
 }
